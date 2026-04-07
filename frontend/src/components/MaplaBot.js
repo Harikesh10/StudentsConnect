@@ -77,7 +77,7 @@ const MaplaBot = ({ user }) => {
                 applications: appsContext,
                 history: messages.slice(-10) // Send recent context
             };
-            const res = await axios.post('http://localhost:5000/api/bot/chat', chatPayload);
+            const res = await axios.post('https://students-connect-9ywv.onrender.com/api/bot/chat', chatPayload);
             setMessages(prev => [...prev, { text: res.data.response, isBot: true }]);
         } catch (error) {
             console.error('Bot Error:', error);
