@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { clubAPI, applicationAPI } from '../services/api';
@@ -13,12 +13,7 @@ const ClubDetail = ({ user, onLogout }) => {
   const [selectedHiring, setSelectedHiring] = useState(null);
   const [message, setMessage] = useState('');
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    loadClub();
-  }, [id]);
-
-  const loadClub = async () => {
+  const loadClub = useCallback(async () => {
     try {
       const response = await clubAPI.getById(id);
       setClub(response.data);
@@ -27,7 +22,11 @@ const ClubDetail = ({ user, onLogout }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    loadClub();
+  }, [loadClub]);
 
   const handleApply = async (hiring) => {
     if (user.userType !== 'student') {
