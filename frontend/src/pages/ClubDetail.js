@@ -28,6 +28,7 @@ const ClubDetail = ({ user, onLogout }) => {
     loadClub();
   }, [loadClub]);
 
+  
   const handleApply = async (hiring) => {
     if (user.userType !== 'student') {
       alert('Only students can apply');
