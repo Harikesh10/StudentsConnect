@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { clubAPI, applicationAPI } from '../services/api';
 
-const MaplaBot = ({ user }) => {
+const NexusAI = ({ user }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -19,20 +19,20 @@ const MaplaBot = ({ user }) => {
         if (!user) return;
         
         // Load history from local storage
-        const savedHistory = localStorage.getItem(`maplabot_history_${user.id}`);
+        const savedHistory = localStorage.getItem(`nexusai_history_${user.id}`);
         if (savedHistory) {
             try {
                 const parsed = JSON.parse(savedHistory);
                 if (parsed.length > 0) {
                     setMessages(parsed);
                 } else {
-                    setMessages([{ text: `Hi ${user.name}! I'm Mapla Bot, your Sathyabama Connect assistant. How can I help you today?`, isBot: true }]);
+                    setMessages([{ text: `Hi ${user.name}! I'm Nexus AI, your Sathyabama Connect assistant. How can I help you today?`, isBot: true }]);
                 }
             } catch (e) {
-                setMessages([{ text: `Hi ${user.name}! I'm Mapla Bot, your Sathyabama Connect assistant. How can I help you today?`, isBot: true }]);
+                setMessages([{ text: `Hi ${user.name}! I'm Nexus AI, your Sathyabama Connect assistant. How can I help you today?`, isBot: true }]);
             }
         } else {
-            setMessages([{ text: `Hi ${user.name}! I'm Mapla Bot, your Sathyabama Connect assistant. How can I help you today?`, isBot: true }]);
+            setMessages([{ text: `Hi ${user.name}! I'm Nexus AI, your Sathyabama Connect assistant. How can I help you today?`, isBot: true }]);
         }
 
         // Fetch context data
@@ -54,7 +54,7 @@ const MaplaBot = ({ user }) => {
 
     useEffect(() => {
         if (user && messages.length > 0) {
-            localStorage.setItem(`maplabot_history_${user.id}`, JSON.stringify(messages));
+            localStorage.setItem(`nexusai_history_${user.id}`, JSON.stringify(messages));
         }
         scrollToBottom();
     }, [messages, isOpen, user]);
@@ -100,7 +100,7 @@ const MaplaBot = ({ user }) => {
                                 <span className="text-xl">🤖</span>
                             </div>
                             <div>
-                                <h3 className="font-bold text-sm tracking-wide">Mapla Bot</h3>
+                                <h3 className="font-bold text-sm tracking-wide">Nexus AI</h3>
                                 <p className="text-xs text-gray-200 font-medium">Always here to help</p>
                             </div>
                         </div>
@@ -179,4 +179,4 @@ const MaplaBot = ({ user }) => {
     );
 };
 
-export default MaplaBot;
+export default NexusAI;

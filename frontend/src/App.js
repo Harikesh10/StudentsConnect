@@ -9,7 +9,7 @@ import ClubDetail from './pages/ClubDetail';
 import Chat from './pages/Chat';
 import Applications from './pages/Applications';
 import socketService from './services/socket';
-import MaplaBot from './components/MaplaBot';
+import NexusAI from './components/NexusAI';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -95,7 +95,7 @@ function App() {
         />
         <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
       </Routes>
-      {user && <MaplaBot user={user} />}
+      {user && <NexusAI user={user} />}
     </Router>
   );
 }

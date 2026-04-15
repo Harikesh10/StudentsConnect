@@ -86,7 +86,7 @@ const getLocalResponse = (message, user, clubs, applications) => {
     } else if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
         const name = user ? user.name : "there";
         return pick([
-            `Hi ${name}! I'm Mapla Bot, your assistant. I can help you with questions about clubs, chat, profiles, and more.`,
+            `Hi ${name}! I'm Nexus AI, your assistant. I can help you with questions about clubs, chat, profiles, and more.`,
             `Hello ${name}! What can I help you discover on the platform today?`,
             `Hey ${name}! I'm here to answer any questions you have about the features.`
         ]);
@@ -166,7 +166,7 @@ Phone: ${user.phone || 'None'}
                     });
                 }
 
-                const prompt = `You are Mapla Bot, a helpful AI assistant for the 'Sathyabama Connect' student platform.
+                const prompt = `You are Nexus AI, a helpful AI assistant for the 'Sathyabama Connect' student platform.
                 
 ${contextStr}
 ${historyStr}
