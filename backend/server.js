@@ -9,7 +9,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "*",
     methods: ["GET", "POST"]
   }
 });
@@ -29,16 +29,22 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/messages', require('./routes/messages'));
 app.use('/api/clubs', require('./routes/clubs'));
 app.use('/api/applications', require('./routes/applications'));
-app.use('/api/bot', require('./routes/bot'));
+// Bot is now handled by the Python chatbot server (backend/chatbot/app.py) on port 5001
 
 // Socket.IO for real-time chat
 const User = require('./models/User');
+const Message = require('./models/Message');
+
+// Track connected users: { userId: socketId }
+const onlineUsers = new Map();
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   socket.on('user-online', async (userId) => {
     try {
+      onlineUsers.set(userId, socket.id);
+      socket.userId = userId; // Store userId on socket for disconnect
       await User.findByIdAndUpdate(userId, { isOnline: true, lastSeen: new Date() });
       io.emit('user-status-change', { userId, isOnline: true });
     } catch (error) {
@@ -51,7 +57,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send-message', async (data) => {
-    const Message = require('./models/Message');
     try {
       const message = new Message({
         sender: data.senderId,
@@ -64,15 +69,36 @@ io.on('connection', (socket) => {
         .populate('sender', 'name registerNumber userType')
         .populate('receiver', 'name registerNumber userType');
 
+      // Send to receiver
       io.to(data.receiverId).emit('receive-message', populatedMessage);
+      // Send confirmation back to sender
       io.to(data.senderId).emit('message-sent', populatedMessage);
     } catch (error) {
       console.error('Error sending message:', error);
     }
   });
 
+  // Typing indicators
+  socket.on('typing', (data) => {
+    io.to(data.receiverId).emit('user-typing', { senderId: data.senderId });
+  });
+
+  socket.on('stop-typing', (data) => {
+    io.to(data.receiverId).emit('user-stop-typing', { senderId: data.senderId });
+  });
+
   socket.on('disconnect', async () => {
     console.log('User disconnected:', socket.id);
+    const userId = socket.userId;
+    if (userId) {
+      onlineUsers.delete(userId);
+      try {
+        await User.findByIdAndUpdate(userId, { isOnline: false, lastSeen: new Date() });
+        io.emit('user-status-change', { userId, isOnline: false });
+      } catch (error) {
+        console.error('Error updating user status on disconnect:', error);
+      }
+    }
   });
 });
 

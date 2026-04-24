@@ -2,28 +2,9 @@ const express = require('express');
 const router = express.Router();
 const Message = require('../models/Message');
 
-// Get conversation between two users
-router.get('/:userId1/:userId2', async (req, res) => {
-  try {
-    const { userId1, userId2 } = req.params;
-    
-    const messages = await Message.find({
-      $or: [
-        { sender: userId1, receiver: userId2 },
-        { sender: userId2, receiver: userId1 }
-      ]
-    })
-    .populate('sender', 'name registerNumber userType')
-    .populate('receiver', 'name registerNumber userType')
-    .sort({ createdAt: 1 });
-
-    res.json(messages);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-});
-
 // Get all conversations for a user
+// IMPORTANT: This route must be defined BEFORE /:userId1/:userId2
+// otherwise Express matches "conversations" as userId1
 router.get('/conversations/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -76,6 +57,28 @@ router.put('/read/:userId1/:userId2', async (req, res) => {
     );
 
     res.json({ message: 'Messages marked as read' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get conversation between two users
+// This catch-all two-param route must be LAST
+router.get('/:userId1/:userId2', async (req, res) => {
+  try {
+    const { userId1, userId2 } = req.params;
+    
+    const messages = await Message.find({
+      $or: [
+        { sender: userId1, receiver: userId2 },
+        { sender: userId2, receiver: userId1 }
+      ]
+    })
+    .populate('sender', 'name registerNumber userType')
+    .populate('receiver', 'name registerNumber userType')
+    .sort({ createdAt: 1 });
+
+    res.json(messages);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

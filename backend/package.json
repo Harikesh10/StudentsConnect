@@ -4,12 +4,13 @@
   "description": "Backend for Sathyabama college networking platform",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "concurrently --names \"server,bot\" --prefix-colors \"cyan,magenta\" \"node server.js\" \"python chatbot/app.py\"",
+    "start:server": "node server.js",
+    "start:bot": "python chatbot/app.py",
+    "dev": "concurrently --names \"server,bot\" --prefix-colors \"cyan,magenta\" \"nodemon server.js\" \"python chatbot/app.py\"",
     "seed": "node seedData.js"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -19,6 +20,7 @@
     "socket.io": "^4.6.1"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "nodemon": "^3.0.1"
   }
 }
