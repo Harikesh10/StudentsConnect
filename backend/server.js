@@ -23,6 +23,11 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
+// Root health check
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Sathyabama Connect API is running' });
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));

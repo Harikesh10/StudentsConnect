@@ -4,10 +4,9 @@
   "description": "Backend for Sathyabama college networking platform",
   "main": "server.js",
   "scripts": {
-    "start": "concurrently --names \"server,bot\" --prefix-colors \"cyan,magenta\" \"node server.js\" \"python chatbot/app.py\"",
-    "start:server": "node server.js",
+    "start": "node server.js",
+    "start:dev": "concurrently --names \"server,bot\" --prefix-colors \"cyan,magenta\" \"nodemon server.js\" \"python chatbot/app.py\"",
     "start:bot": "python chatbot/app.py",
-    "dev": "concurrently --names \"server,bot\" --prefix-colors \"cyan,magenta\" \"nodemon server.js\" \"python chatbot/app.py\"",
     "seed": "node seedData.js"
   },
   "dependencies": {
