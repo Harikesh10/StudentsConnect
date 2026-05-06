@@ -83,7 +83,41 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Typing indicators
+  // Edit message
+  socket.on('edit-message', async (data) => {
+    try {
+      const message = await Message.findById(data.messageId);
+      if (!message || message.sender.toString() !== data.senderId) return;
+
+      message.content = data.newContent;
+      message.isEdited = true;
+      await message.save();
+
+      const populatedMessage = await Message.findById(message._id)
+        .populate('sender', 'name registerNumber userType')
+        .populate('receiver', 'name registerNumber userType');
+
+      io.to(message.receiver.toString()).emit('message-edited', populatedMessage);
+      io.to(message.sender.toString()).emit('message-edited', populatedMessage);
+    } catch (error) {
+      console.error('Error editing message:', error);
+    }
+  });
+
+  // Delete message
+  socket.on('delete-message', async (data) => {
+    try {
+      const message = await Message.findById(data.messageId);
+      if (!message || message.sender.toString() !== data.senderId) return;
+
+      await Message.findByIdAndDelete(data.messageId);
+
+      io.to(message.receiver.toString()).emit('message-deleted', data.messageId);
+      io.to(message.sender.toString()).emit('message-deleted', data.messageId);
+    } catch (error) {
+      console.error('Error deleting message:', error);
+    }
+  });
   socket.on('typing', (data) => {
     io.to(data.receiverId).emit('user-typing', { senderId: data.senderId });
   });

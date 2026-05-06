@@ -18,8 +18,8 @@ const NexusAI = ({ user }) => {
     useEffect(() => {
         if (!user) return;
         
-        // Load history from local storage
-        const savedHistory = localStorage.getItem(`nexusai_history_${user.id}`);
+        // Load history from session storage
+        const savedHistory = sessionStorage.getItem(`nexusai_history_${user.id}`);
         if (savedHistory) {
             try {
                 const parsed = JSON.parse(savedHistory);
@@ -54,7 +54,7 @@ const NexusAI = ({ user }) => {
 
     useEffect(() => {
         if (user && messages.length > 0) {
-            localStorage.setItem(`nexusai_history_${user.id}`, JSON.stringify(messages));
+            sessionStorage.setItem(`nexusai_history_${user.id}`, JSON.stringify(messages));
         }
         scrollToBottom();
     }, [messages, isOpen, user]);

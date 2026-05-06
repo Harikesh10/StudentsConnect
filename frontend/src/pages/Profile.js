@@ -45,9 +45,9 @@ const Profile = ({ user, onLogout }) => {
     try {
       const response = await userAPI.update(user.id, formData);
 
-      // Update local storage
+      // Update session storage
       const updatedUser = { ...user, ...response.data };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
 
       setMessage('Profile updated successfully!');
       setEditing(false);

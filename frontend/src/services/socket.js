@@ -54,6 +54,18 @@ class SocketService {
     }
   }
 
+  editMessage(data) {
+    if (this.socket) {
+      this.socket.emit('edit-message', data);
+    }
+  }
+
+  deleteMessage(data) {
+    if (this.socket) {
+      this.socket.emit('delete-message', data);
+    }
+  }
+
   // Typing indicators
   sendTyping(data) {
     if (this.socket) {
@@ -79,6 +91,20 @@ class SocketService {
     if (this.socket) {
       this.socket.off('message-sent'); // Remove previous listener
       this.socket.on('message-sent', callback);
+    }
+  }
+
+  onMessageEdited(callback) {
+    if (this.socket) {
+      this.socket.off('message-edited');
+      this.socket.on('message-edited', callback);
+    }
+  }
+
+  onMessageDeleted(callback) {
+    if (this.socket) {
+      this.socket.off('message-deleted');
+      this.socket.on('message-deleted', callback);
     }
   }
 
@@ -108,6 +134,8 @@ class SocketService {
     if (this.socket) {
       this.socket.off('receive-message');
       this.socket.off('message-sent');
+      this.socket.off('message-edited');
+      this.socket.off('message-deleted');
       this.socket.off('user-typing');
       this.socket.off('user-stop-typing');
       this.socket.off('user-status-change');

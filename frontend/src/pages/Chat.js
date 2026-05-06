@@ -18,6 +18,9 @@ const Chat = ({ user, onLogout }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
   const [mobileShowChat, setMobileShowChat] = useState(false);
+  const [activeMessageId, setActiveMessageId] = useState(null);
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editContent, setEditContent] = useState('');
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const inputRef = useRef(null);
@@ -49,6 +52,16 @@ const Chat = ({ user, onLogout }) => {
         if (prev.find(m => m._id === message._id)) return prev;
         return [...prev, message];
       });
+      loadConversations();
+    });
+
+    socketService.onMessageEdited((editedMsg) => {
+      setMessages(prev => prev.map(m => m._id === editedMsg._id ? editedMsg : m));
+      loadConversations();
+    });
+
+    socketService.onMessageDeleted((messageId) => {
+      setMessages(prev => prev.filter(m => m._id !== messageId));
       loadConversations();
     });
 
@@ -218,6 +231,30 @@ const Chat = ({ user, onLogout }) => {
       receiverId: selectedUser._id,
     });
     setNewMessage('');
+  };
+
+  const handleSaveEdit = (e) => {
+    e.preventDefault();
+    if (!editContent.trim()) return;
+
+    socketService.editMessage({
+      messageId: editingMessageId,
+      senderId: user.id,
+      newContent: editContent.trim()
+    });
+    setEditingMessageId(null);
+    setEditContent('');
+    setActiveMessageId(null);
+  };
+
+  const handleDeleteMessage = (messageId) => {
+    if (window.confirm("Are you sure you want to delete this message?")) {
+      socketService.deleteMessage({
+        messageId: messageId,
+        senderId: user.id
+      });
+      setActiveMessageId(null);
+    }
   };
 
   const formatTime = (dateStr) => {
@@ -436,18 +473,67 @@ const Chat = ({ user, onLogout }) => {
                             <span>{dateLabel}</span>
                           </div>
                         )}
-                        <div className={`chat-bubble-row ${isSent ? 'chat-bubble-row--sent' : 'chat-bubble-row--received'}`}>
+                        <div 
+                          className={`chat-bubble-row ${isSent ? 'chat-bubble-row--sent' : 'chat-bubble-row--received'}`}
+                          onMouseEnter={() => isSent && setActiveMessageId(msg._id)}
+                          onMouseLeave={() => setActiveMessageId(null)}
+                        >
                           <div className={`chat-bubble ${isSent ? 'chat-bubble--sent' : 'chat-bubble--received'}`}>
-                            <p className="chat-bubble__text">{msg.content}</p>
-                            <div className="chat-bubble__meta">
-                              <span className="chat-bubble__time">{formatTime(msg.createdAt)}</span>
-                              {isSent && msg.read && (
-                                <svg className="chat-bubble__read" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="20 6 9 17 4 12"/>
-                                </svg>
-                              )}
-                            </div>
+                            {editingMessageId === msg._id ? (
+                              <form onSubmit={handleSaveEdit} className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={editContent}
+                                  onChange={(e) => setEditContent(e.target.value)}
+                                  className="px-2 py-1 text-sm text-gray-900 bg-white rounded border border-gray-300 focus:outline-none focus:border-primary"
+                                  autoFocus
+                                />
+                                <button type="submit" className="text-white hover:text-green-200">
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </button>
+                                <button type="button" onClick={() => setEditingMessageId(null)} className="text-white hover:text-red-200">
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
+                              </form>
+                            ) : (
+                              <>
+                                <p className="chat-bubble__text">
+                                  {msg.content}
+                                  {msg.isEdited && <span className="text-[10px] opacity-75 ml-2">(edited)</span>}
+                                </p>
+                                <div className="chat-bubble__meta">
+                                  <span className="chat-bubble__time">{formatTime(msg.createdAt)}</span>
+                                  {isSent && msg.read && (
+                                    <svg className="chat-bubble__read" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                  )}
+                                </div>
+                              </>
+                            )}
                           </div>
+                          
+                          {isSent && activeMessageId === msg._id && editingMessageId !== msg._id && (
+                            <div className="flex gap-2 mx-2 items-center opacity-70">
+                              <button
+                                onClick={() => {
+                                  setEditingMessageId(msg._id);
+                                  setEditContent(msg.content);
+                                }}
+                                className="hover:text-primary transition-colors"
+                                title="Edit message"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteMessage(msg._id)}
+                                className="hover:text-red-500 transition-colors"
+                                title="Delete message"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </React.Fragment>
                     );
