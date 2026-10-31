@@ -8,8 +8,8 @@ import axios from 'axios';
 // The second api endpoint is for the local development of the website
 
 const api = axios.create({
-  // baseURL: 'https://students-connect-9ywv.onrender.com/api'
-  baseURL: 'http://localhost:5000/api'
+  baseURL: 'https://students-connect-9ywv.onrender.com/api'
+  // baseURL: 'http://localhost:5000/api'
 
 });
 
