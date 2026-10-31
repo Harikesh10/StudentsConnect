@@ -2,8 +2,14 @@ import axios from 'axios';
 
 // const API_URL = 'http://localhost:5000/api';
 
+
+// The first api endpoint is for the deployement of the website using on render
+
+// The second api endpoint is for the local development of the website
+
 const api = axios.create({
-  baseURL: 'https://students-connect-9ywv.onrender.com/api'
+  // baseURL: 'https://students-connect-9ywv.onrender.com/api'
+  baseURL: 'http://localhost:5000/api'
 
 });
 
